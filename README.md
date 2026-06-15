@@ -4,6 +4,8 @@ An interactive, explorable 3D model of the solar system built with **React**, **
 
 ![Built with React + Three.js + Vite](https://img.shields.io/badge/React-19-61dafb) ![Three.js](https://img.shields.io/badge/Three.js-r184-000000) ![Vite](https://img.shields.io/badge/Vite-8-646cff)
 
+[Live Site](https://the-3d-solar-system.web.app/)
+
 ![The Solar System 3D app](public/SolarSystemApp.png)
 
 ## Features
