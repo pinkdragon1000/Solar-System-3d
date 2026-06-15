@@ -1,0 +1,442 @@
+.app {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #05060f;
+}
+
+.app canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Overlay UI ---- */
+.overlay {
+  position: absolute;
+  z-index: 10;
+  pointer-events: none;
+}
+.overlay > * {
+  pointer-events: auto;
+}
+
+.top-left {
+  top: 28px;
+  left: 32px;
+  max-width: 60%;
+  /* Lift the header (and its search dropdown) above the info panel (z-index 20)
+     so the open results list isn't clipped behind the panel. */
+  z-index: 40;
+}
+.top-left h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #fff, #9fb6ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.top-left p {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: #8b93b5;
+  letter-spacing: 0.3px;
+}
+
+.top-right {
+  top: 28px;
+  right: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+/* ---- Search ---- */
+.search {
+  position: relative;
+  width: 230px;
+}
+.top-left .search {
+  margin-top: 16px;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: block;
+  /* The input's backdrop-filter creates a stacking context, so it would
+     otherwise paint over this icon — keep the icon above it. */
+  z-index: 1;
+  color: #8b93b5;
+  pointer-events: none;
+}
+.search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px 10px 34px;
+  font: inherit;
+  font-size: 0.85rem;
+  color: #eef1ff;
+  background: rgba(20, 26, 48, 0.65);
+  border: 1px solid rgba(120, 140, 200, 0.3);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  outline: none;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+.search-input::placeholder {
+  color: #7b83a5;
+}
+.search-input:focus {
+  background: rgba(30, 38, 68, 0.85);
+  border-color: rgba(150, 175, 255, 0.7);
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: rgba(14, 18, 38, 0.95);
+  border: 1px solid rgba(120, 140, 200, 0.25);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 30;
+}
+.search-results button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  color: #dde2f7;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+.search-results button:hover {
+  background: rgba(90, 110, 200, 0.35);
+}
+/* Moon is a child of Earth — indent it under its parent. */
+.search-results li.is-child button {
+  padding-left: 30px;
+}
+
+.ctrl-btn {
+  padding: 9px 16px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: #d7ddf5;
+  background: rgba(20, 26, 48, 0.6);
+  border: 1px solid rgba(120, 140, 200, 0.25);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  transition: all 0.18s ease;
+}
+.ctrl-btn:hover {
+  background: rgba(40, 50, 90, 0.8);
+  border-color: rgba(140, 160, 230, 0.5);
+}
+
+/* ---- Planet thumbnail (used in the search results) ---- */
+.chip-dot {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Spherical shading: a soft highlight on the upper-left, shadow lower-right. */
+  box-shadow: inset 3px 3px 5px rgba(255, 255, 255, 0.28),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.6), 0 0 6px rgba(255, 255, 255, 0.15);
+}
+
+/* ---- Planet hover label (rendered in 3D via drei Html) ---- */
+.planet-label {
+  padding: 3px 10px;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  background: rgba(10, 14, 30, 0.75);
+  border: 1px solid rgba(150, 165, 230, 0.4);
+  border-radius: 6px;
+  transform: translateY(-4px);
+  user-select: none;
+}
+
+/* ---- Info panel ---- */
+.info-panel {
+  position: absolute;
+  z-index: 20;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: min(380px, 88vw);
+  padding: 80px 30px 30px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  color: #e7ebff;
+  background: linear-gradient(
+    180deg,
+    rgba(14, 18, 38, 0.92),
+    rgba(8, 10, 24, 0.96)
+  );
+  backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(120, 140, 200, 0.2);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes slideIn {
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.close-btn {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: #aab2d8;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(150, 165, 230, 0.2);
+  border-radius: 50%;
+  transition: all 0.18s ease;
+}
+.close-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+/* Small spherical thumbnail of the body, using its real surface texture */
+.info-thumb {
+  position: relative;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 0 22px -2px var(--glow, #fff);
+}
+/* Spherical shading: bright sunlit limb top-left, terminator falling to the
+   bottom-right, so the flat texture reads as a lit 3D globe. */
+.info-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 42%),
+    radial-gradient(circle at 70% 74%, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 62%);
+  box-shadow: inset -4px -4px 9px rgba(0, 0, 0, 0.65);
+}
+/* A hint of a ring for Saturn/Uranus. */
+.info-thumb.has-rings::before {
+  content: '';
+  position: absolute;
+  left: -28%;
+  right: -28%;
+  top: 50%;
+  height: 34%;
+  transform: translateY(-50%) rotate(-18deg);
+  border-radius: 50%;
+  border: 2px solid rgba(225, 215, 185, 0.55);
+  border-bottom-color: transparent;
+  pointer-events: none;
+}
+.info-header h2 {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.info-desc {
+  margin: 0 0 24px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #b9c0e2;
+}
+
+.info-facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.fact-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+.fact-row dt {
+  color: #8b93b5;
+  font-size: 0.85rem;
+}
+.fact-row dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* ---- Moon phases ---- */
+.moon-section {
+  margin-top: 28px;
+}
+.info-subhead {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #eef1ff;
+}
+.moon-intro {
+  margin: 0 0 18px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #b9c0e2;
+}
+.moon-phases {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 10px;
+}
+.moon-phase {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.moon-phase svg {
+  width: 100%;
+  max-width: 58px;
+  height: auto;
+  filter: drop-shadow(0 0 6px rgba(120, 140, 200, 0.25));
+}
+.moon-phase figcaption {
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: #8b93b5;
+  text-align: center;
+}
+
+/* Grab handle — only shown when the panel is a bottom sheet (phone/tablet). */
+.sheet-handle {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .top-left p {
+    display: none;
+  }
+}
+
+/* Bottom-sheet layout for phones and tablets. */
+@media (max-width: 1024px) {
+  /* Planet name labels add clutter on touch screens — the bottom sheet
+     already names the selected body. */
+  .planet-label {
+    display: none;
+  }
+
+  /* Bottom sheet instead of a side panel. */
+  .info-panel {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+    max-height: 48vh;
+    padding: 26px 22px calc(22px + env(safe-area-inset-bottom));
+    border-left: none;
+    border-top: 1px solid rgba(120, 140, 200, 0.2);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.55);
+    animation: slideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.25s ease;
+  }
+
+  /* Tappable / draggable grab handle at the top of the sheet. */
+  .sheet-handle {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 26px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .sheet-handle::before {
+    content: '';
+    position: absolute;
+    top: 9px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(150, 165, 230, 0.5);
+  }
+
+  .close-btn {
+    top: 16px;
+    right: 16px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
